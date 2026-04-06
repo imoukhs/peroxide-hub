@@ -249,10 +249,47 @@ local function getMyPosition()
     local hrp = getHRP()
     if hrp then
         local pos = hrp.Position
+        local coordStr = string.format("Vector3.new(%.1f, %.1f, %.1f)", pos.X, pos.Y, pos.Z)
+
+        -- Print to console
         print("=== YOUR CURRENT POSITION ===")
-        print(string.format("Vector3.new(%.1f, %.1f, %.1f)", pos.X, pos.Y, pos.Z))
-        print(string.format("CFrame.new(%.1f, %.1f, %.1f)", pos.X, pos.Y, pos.Z))
+        print(coordStr)
         print("=============================")
+
+        -- Copy to clipboard (works on most executors)
+        pcall(function()
+            if setclipboard then
+                setclipboard(coordStr)
+            elseif toclipboard then
+                toclipboard(coordStr)
+            end
+        end)
+
+        -- Save to file (builds up a list you can check later)
+        pcall(function()
+            if writefile and readfile and isfile then
+                local existing = ""
+                if isfile("PeroxideCoords.txt") then
+                    existing = readfile("PeroxideCoords.txt")
+                end
+                local entry = string.format(
+                    "[%s] %s  -- %s\n",
+                    os.date("%H:%M:%S"),
+                    coordStr,
+                    detectLocation()
+                )
+                writefile("PeroxideCoords.txt", existing .. entry)
+            end
+        end)
+
+        -- Show on-screen notification so you know it worked
+        pcall(function()
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Position Saved!",
+                Text = coordStr,
+                Duration = 4,
+            })
+        end)
     end
 end
 
